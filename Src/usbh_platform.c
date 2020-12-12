@@ -34,8 +34,8 @@
   *           - 1 : VBUS Inactive
   */
 void MX_DriverVbusFS(uint8_t state)
-{ 
-  uint8_t data = state; 
+{
+  uint8_t data = state;
   /* USER CODE BEGIN PREPARE_GPIO_DATA_VBUS_FS */
   if(state == 0)
   {

@@ -21,9 +21,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
-#include "fatfs.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "fatfs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,6 +58,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
+extern DMA_HandleTypeDef hdma_dac2;
 extern DAC_HandleTypeDef hdac;
 extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
@@ -70,7 +71,7 @@ extern int process;
 /* USER CODE END EV */
 
 /******************************************************************************/
-/*           Cortex-M4 Processor Interruption and Exception Handlers          */ 
+/*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
   * @brief This function handles Non maskable interrupt.
@@ -206,17 +207,17 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles USB On The Go FS global interrupt.
+  * @brief This function handles DMA1 stream6 global interrupt.
   */
-void OTG_FS_IRQHandler(void)
+void DMA1_Stream6_IRQHandler(void)
 {
-  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+  /* USER CODE BEGIN DMA1_Stream6_IRQn 0 */
 
-  /* USER CODE END OTG_FS_IRQn 0 */
-  HAL_HCD_IRQHandler(&hhcd_USB_OTG_FS);
-  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+  /* USER CODE END DMA1_Stream6_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_dac2);
+  /* USER CODE BEGIN DMA1_Stream6_IRQn 1 */
 
-  /* USER CODE END OTG_FS_IRQn 1 */
+  /* USER CODE END DMA1_Stream6_IRQn 1 */
 }
 
 /**
@@ -229,50 +230,23 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_DAC_IRQHandler(&hdac);
   HAL_TIM_IRQHandler(&htim6);
-  //HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
-  if(HAL_GPIO_ReadPin(CLK_GPIO_Port, CLK_Pin) == GPIO_PIN_SET)
-  {
-	  if (process == 1)
-	  {
-		  //сбрасываем RST
-		  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_RESET);
-
-		  if (dac_buffer_pointer == 0)
-		  {
-			  if (half_to_fill)
-				  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);
-			  half_to_fill = 2;
-		  }
-		  else if (dac_buffer_pointer == 500)
-		  {
-			  if (half_to_fill)
-				  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);
-			  half_to_fill = 1;
-		  }
-
-		  HAL_DAC_SetValue(&hdac,DAC_CHANNEL_2,DAC_ALIGN_12B_R,rwtext[dac_buffer_pointer]);
-
-		  //ставим данные
-		  GPIOE -> ODR = rwtext[dac_buffer_pointer];
-
-		  dac_buffer_pointer++;
-		  if (dac_buffer_pointer == 1000)
-			  dac_buffer_pointer = 0;
-	  }
-	  else
-	  {
-		  HAL_GPIO_WritePin(RST_GPIO_Port, RST_Pin, GPIO_PIN_SET);
-	  }
-  }
-
-  HAL_GPIO_TogglePin(CLK_GPIO_Port, CLK_Pin);
-
-
-
-
   /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USB On The Go FS global interrupt.
+  */
+void OTG_FS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+
+  /* USER CODE END OTG_FS_IRQn 0 */
+  HAL_HCD_IRQHandler(&hhcd_USB_OTG_FS);
+  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+
+  /* USER CODE END OTG_FS_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
